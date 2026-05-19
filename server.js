@@ -14,7 +14,8 @@ const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('he
 const TOKEN_EXPIRY = '7d';
 
 // Initialize SQLite database
-const db = new Database(path.join(__dirname, 'members.db'));
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'members.db');
+const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
 // Create tables
