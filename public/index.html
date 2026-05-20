@@ -582,8 +582,11 @@
             </div>
           ` : status === 'approved' ? `
             <div style="margin-top: 12px; padding: 12px; background: #F0FFF4; border-radius: 8px; font-size: 14px;">
-              ✓ 已通过 · 会员号: <strong>${app.member_no}</strong><br>
-              <span style="color: var(--gray);">初始密码: <strong>${app.initial_password || '(已发送)'}</strong></span>
+              ✓ 已通过<br>
+              会员号: <strong>${app.member_no}</strong> &nbsp; 密码: <strong>${app.initial_password || '(已发送)'}</strong>
+            </div>
+            <div class="app-actions">
+              <button class="btn btn-sm btn-danger" onclick="deleteMember(${app.id})">删除会员</button>
             </div>
           ` : `
             <div style="margin-top: 12px; font-size: 14px; color: var(--gray);">
@@ -624,6 +627,18 @@
       if (res.success) {
         alert('已拒绝该申请');
         loadApplications('pending');
+      } else {
+        alert(res.message);
+      }
+    }
+
+    async function deleteMember(id) {
+      if (!confirm('确定删除该会员？此操作不可恢复。')) return;
+      const res = await api('/admin/member/delete', 'POST', { applicationId: id }, 'admin');
+      
+      if (res.success) {
+        alert('已删除');
+        loadApplications('approved');
       } else {
         alert(res.message);
       }

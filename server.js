@@ -421,6 +421,21 @@ app.post('/api/admin/reject', adminAuth, (req, res) => {
   res.json({ success: true, message: '已拒绝该申请' });
 });
 
+// Delete approved member and application
+app.post('/api/admin/member/delete', adminAuth, (req, res) => {
+  const { applicationId } = req.body;
+  if (!applicationId) {
+    return res.json({ success: false, message: '缺少申请ID' });
+  }
+  const app_rec = db.prepare('SELECT * FROM applications WHERE id = ? AND status = ?').get(applicationId, 'approved');
+  if (!app_rec) {
+    return res.json({ success: false, message: '申请不存在或未通过审核' });
+  }
+  db.prepare('DELETE FROM members WHERE member_no = ?').run(app_rec.member_no);
+  db.prepare('DELETE FROM applications WHERE id = ?').run(applicationId);
+  res.json({ success: true, message: '会员已删除' });
+});
+
 // Get stats
 app.get('/api/admin/stats', adminAuth, (req, res) => {
   const xinanshuCount = db.prepare(
