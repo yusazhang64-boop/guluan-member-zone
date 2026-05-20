@@ -421,6 +421,23 @@ app.post('/api/admin/reject', adminAuth, (req, res) => {
   res.json({ success: true, message: '已拒绝该申请' });
 });
 
+// Reset member password (admin sees new password)
+app.post('/api/admin/member/reset-password', adminAuth, (req, res) => {
+  const { applicationId } = req.body;
+  if (!applicationId) {
+    return res.json({ success: false, message: '缺少申请ID' });
+  }
+  const app_rec = db.prepare('SELECT * FROM applications WHERE id = ?').get(applicationId);
+  if (!app_rec || !app_rec.member_no) {
+    return res.json({ success: false, message: '申请不存在或未通过审核' });
+  }
+  const newPassword = generateInitialPassword();
+  const passwordHash = bcrypt.hashSync(newPassword, 10);
+  db.prepare('UPDATE members SET password_hash = ? WHERE member_no = ?').run(passwordHash, app_rec.member_no);
+  db.prepare('UPDATE applications SET initial_password = ? WHERE id = ?').run(newPassword, applicationId);
+  res.json({ success: true, message: '密码已重置', data: { newPassword } });
+});
+
 // Delete approved member and application
 app.post('/api/admin/member/delete', adminAuth, (req, res) => {
   const { applicationId } = req.body;
