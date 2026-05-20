@@ -148,13 +148,14 @@ function adminAuth(req, res, next) {
 // ==================== Helper Functions ====================
 function generateMemberNo(type) {
   const prefix = type === 'xinanshu' ? 'XA' : 'WA';
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return prefix + timestamp + random;
+  const count = db.prepare('SELECT COUNT(*) as count FROM members WHERE member_type = ?').get(type);
+  const nextNum = (count ? count.count : 0) + 1;
+  return prefix + nextNum.toString().padStart(3, '0');
 }
 
 function generateInitialPassword() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  // 6位数字密码，简单好记
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // ==================== Public API ====================
